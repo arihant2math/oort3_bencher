@@ -11,6 +11,9 @@ cargo build --release
 ```shell
 oort3_bencher [path-to-baseline] [path-to-new] "tutorial_frigate,tutorial_cruiser"
 ```
+
+The program will run the benchmarks specified by the comma-seperated list which makes up the 3rd argument.
+
 ```shell
 oort3_bencher [path-to-baseline] [path-to-new] [path-to-benchmark-list]
 ```
