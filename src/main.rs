@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::collections::HashMap;
 use clap::Parser;
 use oort_simulator::simulation::Code;
@@ -8,7 +9,6 @@ use std::fmt::{Display, Formatter};
 use std::io::BufRead;
 use std::path::PathBuf;
 use std::sync::atomic::AtomicUsize;
-use indicatif::{ProgressBar, ParallelProgressIterator, ProgressStyle};
 use log::{debug, info, warn};
 use oort_simulator::scenario::Status;
 use oort_simulator::vm::builtin;
@@ -45,7 +45,7 @@ struct Arguments {
     #[clap(long, default_value = "/tmp/oort-wasm-cache")]
     wasm_cache: Option<PathBuf>,
 
-    scene_file: PathBuf
+    scene_listing: String
 }
 
 #[derive(Clone, Default, Debug)]
@@ -179,12 +179,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let args = Arguments::parse();
 
     let mut scene_mapping = HashMap::new();
-    let scene_file = std::fs::File::open(&args.scene_file)?;
-    let scenes: Vec<String> = std::io::BufReader::new(scene_file)
-        .lines()
-        .map(|line| line.unwrap())
-        .filter(|line| !line.starts_with('#'))
-        .collect();
+    let scenes: Vec<String> = if Path::new(&args.scene_listing).is_file() {
+        let scene_file = std::fs::File::open(&args.scene_listing)?;
+        std::io::BufReader::new(scene_file)
+            .lines()
+            .map(|line| line.unwrap())
+            .filter(|line| !line.starts_with('#'))
+            .map(|line| line.trim().to_string())
+            .collect()
+    } else {
+        args.scene_listing
+            .split(',')
+            .map(|s| s.to_string())
+            .collect()
+    };
     for scene in scenes {
         let scenario = scenario::load_safe(&scene).expect(&format!("Unknown scenario {scene}"));
         scene_mapping.insert(scene.to_string(), scenario.initial_code()[1].clone());
@@ -207,7 +215,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         compiled_code: Code::Wasm(wasm),
     };
 
-    let style = ProgressStyle::default_bar();
     let converted_scene_mapping: Vec<(String, Code)> = scene_mapping.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
     println!("{BRIGHT_BLUE}Running Benchmarks{RESET}");
     let completed_num = AtomicUsize::new(0);
