@@ -1,0 +1,27 @@
+[package]
+name = "oort3_bencher"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5", features = ["derive"] }
+rayon = "1.10"
+futures = { version = "0.3", features = ["executor", "thread-pool"] }
+log = "0.4"
+tokio = "1.41"
+env_logger = "0.11"
+oort_compiler = { path = "../oort3/shared/compiler" }
+oort_simulator = { path = "../oort3/shared/simulator" }
+oort_tools = { path = "../oort3/tools" }
+indicatif = { version = "0.17.9", features = ["rayon"] }
+mimalloc = { version = "*" }
+
+[profile.flame]
+inherits = "release"
+debug = 1
+
+[profile.perf]
+inherits = "release"
+codegen-units = 1
+lto = "fat"
+
