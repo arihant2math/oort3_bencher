@@ -10,8 +10,8 @@ futures = { version = "0.3", features = ["executor", "thread-pool"] }
 log = "0.4"
 tokio = "1.41"
 env_logger = "0.11"
-oort_compiler = { path = "../oort3/shared/compiler" }
-oort_simulator = { path = "../oort3/shared/simulator" }
+oort_compiler = { path = "oort3/shared/compiler" }
+oort_simulator = { path = "oort3/shared/simulator" }
 oort_tools = { path = "../oort3/tools" }
 indicatif = { version = "0.17.9", features = ["rayon"] }
 mimalloc = { version = "*" }
